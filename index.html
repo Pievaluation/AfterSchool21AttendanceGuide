@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AS21 Attendance Tracking — Pathway Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Mulish:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:       #1F3864;
+  --navy-dk:    #152749;
+  --navy-lt:    #d6dff0;
+  --gold:       #C09B26;
+  --gold-lt:    #fdf3cc;
+  --orange:     #C55A11;
+  --orange-lt:  #fde8d8;
+  --teal:       #1B6B64;
+  --teal-lt:    #d4efec;
+  --slate:      #3a5a8c;
+  --bg:         #f0f2f7;
+  --card-bg:    #ffffff;
+  --text:       #1a2033;
+  --muted:      #5a6480;
+  --border:     #dde2ef;
+  --shadow:     0 4px 24px rgba(31,56,100,0.10);
+  --shadow-lg:  0 8px 40px rgba(31,56,100,0.15);
+  --radius:     14px;
+  --radius-sm:  8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Mulish', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+.site-header {
+  background: var(--navy-dk);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 60px;
+  border-bottom: 3px solid var(--gold);
+}
+.site-header .logo-mark {
+  width: 36px; height: 36px;
+  background: var(--gold);
+  border-radius: 6px;
+  display: grid; place-items: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800; font-size: 18px;
+  color: var(--navy-dk);
+  flex-shrink: 0;
+}
+.site-header .header-text h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: #fff; letter-spacing: 0.01em;
+}
+.site-header .header-text p {
+  font-size: 11px; color: rgba(255,255,255,0.55);
+  font-weight: 500;
+}
+.header-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ─── PROGRESS BAR ───────────────────────────────────────────────── */
+.progress-bar-wrap {
+  background: var(--navy);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+}
+.prog-step {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  cursor: default;
+}
+.prog-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 2px solid rgba(255,255,255,0.25);
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,0.4);
+  transition: all 0.3s;
+  flex-shrink: 0;
+  position: relative;
+}
+.prog-dot.done   { background: var(--gold); border-color: var(--gold); color: var(--navy-dk); }
+.prog-dot.active { background: #fff; border-color: #fff; color: var(--navy); }
+.prog-dot.done::after {
+  content: '✓';
+  font-size: 13px;
+}
+.prog-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  margin: 0 6px;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+.prog-step.done .prog-label   { color: rgba(255,255,255,0.6); }
+.prog-step.active .prog-label { color: rgba(255,255,255,0.9); }
+.prog-connector {
+  width: 28px; height: 2px;
+  background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.prog-connector.done { background: var(--gold); }
+
+/* ─── MAIN CONTENT ───────────────────────────────────────────────── */
+.main-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 36px 20px 60px;
+}
+.content-col {
+  width: 100%;
+  max-width: 780px;
+}
+
+/* ─── CARDS ──────────────────────────────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: slideIn 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── WELCOME CARD ───────────────────────────────────────────────── */
+.welcome-header {
+  background: linear-gradient(135deg, var(--navy-dk) 0%, var(--navy) 60%, var(--slate) 100%);
+  padding: 44px 44px 36px;
+  position: relative;
+  overflow: hidden;
+}
+.welcome-header::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: rgba(192,155,38,0.15);
+}
+.welcome-header::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: 40px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+.welcome-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(192,155,38,0.2);
+  border: 1px solid rgba(192,155,38,0.4);
+  color: var(--gold);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.welcome-header h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 32px; font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 10px;
+  position: relative; z-index: 1;
+}
+.welcome-header h2 span { color: var(--gold); }
+.welcome-header p {
+  color: rgba(255,255,255,0.65);
+  font-size: 15px; line-height: 1.6;
+  max-width: 520px;
+  position: relative; z-index: 1;
+}
+.welcome-body { padding: 32px 44px 40px; }
+.welcome-steps {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.welcome-step {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+}
+.ws-num {
+  width: 28px; height: 28px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700; font-size: 13px;
+  flex-shrink: 0;
+}
+.ws-text strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px; }
+.ws-text span   { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.welcome-10min {
+  background: var(--gold-lt);
+  border: 1px solid var(--gold);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.welcome-10min .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.welcome-10min p { font-size: 13px; line-height: 1.6; }
+.welcome-10min strong { color: var(--navy); }
+.btn-start {
+  width: 100%;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  padding: 18px 32px;
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px; font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, transform 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-start:hover { background: var(--navy-dk); transform: translateY(-1px); }
+.btn-start:active { transform: translateY(0); }
+.btn-start .arrow { font-size: 20px; transition: transform 0.2s; }
+.btn-start:hover .arrow { transform: translateX(4px); }
+
+/* ─── QUESTION CARD ──────────────────────────────────────────────── */
+.q-header {
+  padding: 24px 36px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.q-section-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid;
+}
+.badge-s1 { color: var(--navy); border-color: var(--navy); background: var(--navy-lt); }
+.badge-s2 { color: var(--orange); border-color: var(--orange); background: var(--orange-lt); }
+
+.q-num {
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  margin-left: auto;
+}
+.q-body {
+  padding: 22px 36px 0;
+}
+.q-body h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.q-body .q-subtitle {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 36px 32px;
+}
+.option-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 22px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+  width: 100%;
+}
+.option-btn:hover {
+  border-color: var(--navy);
+  background: var(--navy-lt);
+  transform: translateX(3px);
+  box-shadow: 0 2px 12px rgba(31,56,100,0.1);
+}
+.option-letter {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: var(--navy);
+  color: #fff;
+  display: grid; place-items: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800; font-size: 15px;
+  flex-shrink: 0;
+}
+.option-letter.opt-C { background: var(--orange); }
+.option-letter.opt-Yes { background: var(--teal); }
+.option-letter.opt-No  { background: var(--muted); }
+.option-text strong {
+  display: block;
+  font-size: 15px; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.option-text span {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ─── NAV BUTTONS ────────────────────────────────────────────────── */
+.q-nav {
+  padding: 0 36px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.btn-back {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.btn-back:hover { border-color: var(--navy); color: var(--navy); }
+.path-preview {
+  margin-left: auto;
+  font-size: 12px; color: var(--muted);
+  font-weight: 600;
+}
+.path-preview span {
+  display: inline-flex;
+  background: var(--navy-lt);
+  color: var(--navy);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-left: 4px;
+  font-size: 11px;
+}
+
+/* ─── RESULT CARD ────────────────────────────────────────────────── */
+.result-banner {
+  padding: 32px 40px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.result-banner::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.result-code {
+  font-family: 'Outfit', sans-serif;
+  font-size: 64px; font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  flex-shrink: 0;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  position: relative;
+}
+.result-info { position: relative; }
+.result-info .result-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 6px;
+}
+.result-info h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+.result-info .result-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.result-tag {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.9);
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* banner color variants */
+.banner-navy   { background: linear-gradient(135deg, var(--navy-dk), var(--navy)); }
+.banner-teal   { background: linear-gradient(135deg, #0f4b45, var(--teal)); }
+.banner-orange { background: linear-gradient(135deg, #8a3700, var(--orange)); }
+
+/* result body */
+.result-body { padding: 28px 40px 36px; }
+
+.result-section {
+  margin-bottom: 24px;
+}
+.result-section-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* requirements */
+.req-list {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.req-chip {
+  background: var(--navy-lt);
+  color: var(--navy);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  border: 1px solid rgba(31,56,100,0.2);
+}
+
+/* no-DSA notice */
+.nodsa-notice {
+  background: #f3f5ff;
+  border: 1.5px solid #c5cce8;
+  border-left: 4px solid var(--navy);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px; color: var(--navy);
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex; gap: 8px; align-items: center;
+}
+
+/* phase labels */
+.phase-label {
+  display: flex; align-items: center; gap: 10px;
+  margin: 18px 0 12px;
+}
+.phase-pill {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 4px 14px; border-radius: 20px;
+  color: #fff;
+}
+.phase-pill.onsite { background: var(--teal); }
+.phase-pill.later  { background: var(--navy); }
+.phase-line { flex: 1; height: 1px; background: var(--border); }
+
+/* steps */
+.steps-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.step-item {
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.step-num {
+  width: 26px; height: 26px;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+.step-text {
+  font-size: 14px; line-height: 1.6; color: var(--text);
+  padding-top: 2px;
+}
+.step-text strong { color: var(--navy); font-weight: 700; }
+
+/* bullet sub-items */
+.step-bullets { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.step-bullet-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--border);
+  font-size: 13px; line-height: 1.5; color: var(--text);
+}
+.step-bullet-item.roster { border-left-color: var(--navy); }
+.step-bullet-item.dropin { border-left-color: var(--teal); }
+.step-bullet-item .bull-label {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.step-bullet-item .bull-label.r { color: var(--navy); }
+.step-bullet-item .bull-label.d { color: var(--teal); }
+.step-bullet-item .bull-label.s { color: var(--orange); }
+.step-bullet-item strong { color: var(--navy); font-weight: 700; }
+
+/* Q4 box */
+.q4-box {
+  background: var(--orange-lt);
+  border: 1.5px solid rgba(197,90,17,0.3);
+  border-left: 4px solid var(--orange);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-top: 20px;
+}
+.q4-box .q4-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--orange);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.q4-steps { display: flex; flex-direction: column; gap: 6px; }
+.q4-step {
+  display: flex; gap: 10px; font-size: 13px;
+  line-height: 1.55; color: var(--text);
+}
+.q4-dot {
+  width: 6px; height: 6px;
+  background: var(--orange); border-radius: 50%;
+  flex-shrink: 0; margin-top: 7px;
+}
+.q4-step strong { color: var(--navy); }
+
+/* note box */
+.note-box {
+  background: var(--gold-lt);
+  border: 1px solid rgba(192,155,38,0.35);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  margin-top: 18px;
+  font-size: 13px; line-height: 1.6; color: var(--text);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.note-box .note-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+.note-box strong { font-weight: 700; color: #7a6000; }
+
+/* result actions */
+.result-actions {
+  display: flex; gap: 12px;
+  padding: 0 40px 36px;
+}
+.btn-action {
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.15s;
+  font-family: 'Mulish', sans-serif;
+}
+.btn-restart {
+  background: var(--navy);
+  color: #fff; border: none;
+}
+.btn-restart:hover { background: var(--navy-dk); }
+.btn-print {
+  background: #fff;
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+}
+.btn-print:hover { border-color: var(--navy); background: var(--navy-lt); }
+
+/* answer trail */
+.answer-trail {
+  padding: 16px 40px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.trail-item {
+  font-size: 11px;
+  display: flex; align-items: center; gap: 5px;
+  color: var(--muted);
+}
+.trail-item .trail-q { font-weight: 600; }
+.trail-item .trail-a {
+  background: var(--navy-lt);
+  color: var(--navy);
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 10px;
+}
+.trail-separator { color: var(--border); font-size: 16px; }
+
+@media print {
+  .site-header, .progress-bar-wrap, .result-actions, .answer-trail { display: none !important; }
+  body { background: #fff; }
+  .main-wrap { padding: 0; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+  .result-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+@media (max-width: 600px) {
+  .site-header { padding: 0 16px; }
+  .progress-bar-wrap { padding: 10px 16px; }
+  .welcome-header, .welcome-body { padding: 28px 24px; }
+  .welcome-steps { grid-template-columns: 1fr; }
+  .q-header, .q-body { padding-left: 24px; padding-right: 24px; }
+  .options-grid, .q-nav { padding-left: 24px; padding-right: 24px; }
+  .result-banner { flex-direction: column; gap: 14px; padding: 24px 28px; }
+  .result-code { font-size: 48px; }
+  .result-body, .result-actions, .answer-trail { padding-left: 24px; padding-right: 24px; }
+}
+
+/* ─── CHECKLIST RESULT FORMAT ────────────────────────────── */
+.site-persona-bar { padding: 12px 40px; background: var(--navy-lt); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.site-persona-bar .sp-label { font-size: 11px; font-weight: 700; color: var(--navy); letter-spacing: 0.05em; text-transform: uppercase; }
+.site-persona-bar .sp-name  { font-size: 14px; font-weight: 700; color: var(--navy); }
+.meta-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 18px 40px 0; background: var(--bg); border-bottom: 1px solid var(--border); }
+.meta-cell { padding: 12px 14px; background: #fff; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.meta-cell .mc-label { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.meta-cell .mc-value { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.checklist-body { padding: 20px 40px 28px; }
+.cl-section { margin-bottom: 18px; }
+.cl-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cl-section-title { font-family: "Outfit", sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 14px; border-radius: 20px; color: #fff; white-space: nowrap; }
+.cl-section-line { flex: 1; height: 1px; background: var(--border); }
+.cl-item { display: flex; gap: 12px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid #f0f2f7; }
+.cl-item:last-child { border-bottom: none; }
+.cl-checkbox { font-size: 16px; flex-shrink: 0; color: var(--muted); margin-top: 1px; line-height: 1; }
+.cl-text { font-size: 13.5px; line-height: 1.6; color: var(--text); flex: 1; }
+.cl-text a { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.cl-text a:hover { color: var(--orange); }
+.cl-continuation { font-size: 13px; line-height: 1.6; color: var(--muted); padding: 5px 0 8px 44px; font-style: italic; border-bottom: 1px dashed #e8eaf0; margin-bottom: 2px; }
+.cl-continuation a { color: var(--navy); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; font-style: normal; }
+@media (max-width: 640px) { .meta-grid { grid-template-columns: 1fr; padding: 14px 24px 0; } .site-persona-bar, .checklist-body { padding-left: 24px; padding-right: 24px; } }
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-mark">PIE</div>
+  <div class="header-text">
+    <h1>AfterSchool21 Attendance Tracking</h1>
+    <p>Nebraska 21st Century Community Learning Centers</p>
+  </div>
+  <div class="header-badge">Pathway Finder</div>
+</header>
+
+<div class="progress-bar-wrap" id="progressBar"></div>
+
+<main class="main-wrap">
+  <div class="content-col">
+    <div id="cardArea"></div>
+  </div>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════
+const state = { answers: {}, history: [] };
+
+// ═══════════════════════════════════════════════════════════════════
+//  QUESTIONS
+// ═══════════════════════════════════════════════════════════════════
+const QUESTIONS = {
+  s1q1: {
+    id: 's1q1', section: 'S1', sectionLabel: 'Section 1: Program Structure',
+    title: 'How are your activities organized?',
+    subtitle: 'This determines whether students are pre-enrolled in specific activities or can attend any activity.',
+    options: [
+      { value:'A', label:'Roster-Based', desc:'Students sign up ahead of time and are expected to attend specific scheduled activities.' },
+      { value:'B', label:'Drop-In',      desc:'Students do not sign up in advance. Any student may attend any available activity on a given day.' },
+      { value:'C', label:'Hybrid — Both', desc:'Your program offers some roster-based (pre-enrolled) activities and some drop-in activities.', isC: true },
+    ],
+    next: () => 's1q2'
+  },
+  s1q2: {
+    id: 's1q2', section: 'S1', sectionLabel: 'Section 1: Program Structure',
+    title: 'How do participants arrive each day?',
+    subtitle: 'This determines whether the Daily Site Attendance module in AS21 is used.',
+    options: [
+      { value:'A', label:'General Site Check-In First', desc:'Students check in to the program site as a whole before moving into their specific APR activities. A site-wide attendance step happens first.' },
+      { value:'B', label:'Direct to APR Activity',     desc:'Students go straight into an APR activity when they arrive — no separate site-wide check-in occurs first.' },
+    ],
+    next: () => 's2q1'
+  },
+  s2q1: {
+    id: 's2q1', section: 'S2', sectionLabel: 'Section 2: Data Entry Method',
+    title: 'When will attendance be recorded in AS21?',
+    subtitle: 'Real-time entry requires an internet-connected device available at your program site during the program.',
+    options: [
+      { value:'A', label:'Real-Time — During the Program', desc:'Attendance is entered into AS21 as students arrive and depart. Requires an online computer or tablet on-site.' },
+      { value:'B', label:'Later / Delayed',                desc:'Attendance is collected on paper rosters or another method during the program, then entered into AS21 at a later time.' },
+    ],
+    next: (ans) => ans === 'A' ? 's2q3' : 's2q2'
+  },
+  s2q2: {
+    id: 's2q2', section: 'S2', sectionLabel: 'Section 2: Data Entry Method',
+    title: 'How will attendance be entered into AS21?',
+    subtitle: 'Choose how your staff will transfer the collected attendance data into the system.',
+    options: [
+      { value:'A', label:'Manually — Type or Select in AS21', desc:'Staff will directly type or select each student\'s attendance record (times, check-in/out) in AS21.' },
+      { value:'B', label:'Upload a Spreadsheet',              desc:'Attendance data will be compiled in a spreadsheet and uploaded to AS21 in batch format.' },
+    ],
+    next: (ans) => ans === 'A' ? 's2q3' : 's2q4'
+  },
+  s2q3: {
+    id: 's2q3', section: 'S2', sectionLabel: 'Section 2: Data Entry Method',
+    title: 'Will you use a barcode scanner?',
+    subtitle: 'A barcode scanner reads student ID cards or printed barcode rosters. Requires an online computer with a USB-A port.',
+    options: [
+      { value:'Yes', label:'Yes — Barcode Scanner', desc:'A USB-A barcode scanner will be used to scan student ID barcodes for faster, more accurate check-in and check-out.', isYes: true },
+      { value:'No',  label:'No — Manual Selection', desc:'Staff will locate and select each student by name in AS21 without using a scanner.',                                   isNo: true },
+    ],
+    next: () => 's2q4'
+  },
+  s2q4: {
+    id: 's2q4', section: 'S2', sectionLabel: 'Section 2: Data Entry Method',
+    title: 'Does your program require a parent/guardian physical signature at check-out?',
+    subtitle: 'If yes, a paper-based collection step must be added regardless of your other data entry method.',
+    options: [
+      { value:'Yes', label:'Yes — Signature Required',     desc:'A physical parent or guardian signature must be collected on a paper roster at student check-out.', isYes: true },
+      { value:'No',  label:'No — Signature Not Required',  desc:'No physical parent or guardian signature is required at check-out.',                               isNo: true },
+    ],
+    next: () => 'result'
+  }
+};
+
+const Q_ORDER_ALL = ['s1q1','s1q2','s2q1','s2q2','s2q3','s2q4'];
+const Q_LABELS    = ['Activity Type','Arrival Method','Entry Timing','Entry Method','Barcode?','Parent Sig?'];
+
+// ═══════════════════════════════════════════════════════════════════
+//  PATHWAY DATA — all 30 pathways
+// ═══════════════════════════════════════════════════════════════════
+// Each pathway has:
+//   color: 'navy' | 'teal' | 'orange'
+//   structure, method: display labels
+//   requirements: string[]
+//   noDsa: bool  (skip Daily Site Attendance)
+//   phases: [ {title: null|string, pill: null|'onsite'|'later', steps: step[]} ]
+//   q4steps: string[]  (shown only if Q4=Yes)
+//   note: string
+//
+// Step types (string with optional [bullet] or [bullet-r] [bullet-d] prefix):
+//   plain string → numbered step
+//   {text, bullets:[{label, cls, text}]} → step with sub-bullets
+
+function s(text, bullets) {
+  return bullets ? { text, bullets } : text;
+}
+function b(label, cls, text) { return { label, cls, text }; }
+
+const PATHWAYS = {"1A": {"site": "Millard North Elementary After School", "arrivalPattern": "A1 – Roster-Based + General Check-In First", "entryMethod": "E1 – Real-time, barcode scanner (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + General Check-In First", "method": "Real-time, barcode scanner (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}]}, {"title": "During Arrival", "items": [{"parts": [{"text": "Open Daily Site Attendance activity in AS21. Scan each student in as they arrive using the barcode scanner. Scanning could be from the Sign In/Out Roster or Participant Barcode report or from student ID cards (if Participant ID matches student ID cards). For the first 10 minutes of arrival after the typical program start time, set the Times toggle to Session Time. Ten (10) minutes after the program start time, change the Times toggle to Current Time. Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " for more information."}]}, {"text": "Before students move from gathering space to first activity, copy Daily Site attendance to pre-enrolled activities using “based on enrollment” option if students are pre-enrolled. Detailed instructions for this process are provided near the end of the How to Track Participation for Multiple Participants Article."}]}, {"title": "During Activities", "items": [{"text": "For pre-enrolled activities, staff must confirm all enrolled students are marked correctly. Update times on your device immediately for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time. Many will be marked present as attendance was copied from Check-In attendance."}]}, {"title": "During Check-Out", "items": [{"text": "Scan each student out using the barcode scanner if they depart more than 10 min before program end time. Those that leave within the 10 minute window automatically receive the program end time (e.g. 6 pm)"}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "1B": {"site": "Fremont Elementary LEAP Program", "arrivalPattern": "A1 – Roster-Based + General Check-In First", "entryMethod": "E1 – Real-time, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + General Check-In First", "method": "Real-time, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}]}, {"title": "During Arrival", "items": [{"parts": [{"text": "Open Daily Site Attendance activity in AS21. Type part of student’s name or scroll to their check box and check it as they arrive. For the first 10 minutes of arrival after the typical program start time, set the Times toggle to “Session Time.” Ten (10) minutes after the program start time, change the Times toggle to “Current Time.” Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " for more information."}]}, {"text": "Before students move from gathering space to first activity, copy Daily Site attendance to pre-enrolled activities using “based on enrollment” option if students are pre-enrolled. Detailed instructions for this process are provided near the end of the How to Track Participation for Multiple Participants Article."}]}, {"title": "During Activities", "items": [{"text": "For pre-enrolled activities, staff must confirm all enrolled students are marked correctly. Update times on your device immediately for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time. Many will be marked present as attendance was copied from Check-In attendance."}]}, {"title": "During Check-Out", "items": [{"text": "Manually record each student (best method is to scroll to their name and click it opening a box where the departure time can be updated) if they depart more than 10 min before program end time. Those that leave within the 10 minute window automatically receive the program end time (e.g. 6 pm)"}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "1C": {"site": "Norfolk Middle School After School Academy", "arrivalPattern": "A1 – Roster-Based + General Check-In First", "entryMethod": "E2 – Later, manual entry (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + General Check-In First", "method": "Later, manual entry (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for the Daily Site Attendance activity into AS21. To do this, follow instructions for "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " being sure to select the correct Daily Site Attendance session (e.g., Fall Daily Attendance – Regular). When scanning, times will default to the program start and end times."}]}, {"parts": [{"text": "Copy Daily Site attendance to pre-enrolled activities using the “based on enrollment” option for activities with pre-enrolled students. Detailed instructions for this process are provided near the end of the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ". When attendance is copied, times will default to activity start and end times."}]}, {"parts": [{"text": "Review the rosters for Daily Site Attendance and activity rosters. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "1D": {"site": "Westview Elementary Learning Center", "arrivalPattern": "A1 – Roster-Based + General Check-In First", "entryMethod": "E2 – Later, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + General Check-In First", "method": "Later, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for the Daily Site Attendance activity into AS21. To do this, follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " article and select the appropriate Daily Site Attendance session (e.g., Fall Daily Attendance – Regular). When entering, times will default to the program start and end times."}]}, {"parts": [{"text": "Copy Daily Site attendance to pre-enrolled activities using the “based on enrollment” option for activities with pre-enrolled students. Detailed instructions for this process are provided near the end of the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ". When attendance is copied, times will default to activity start and end times."}]}, {"parts": [{"text": "Review the rosters for Daily Site Attendance and activity rosters. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "1E": {"site": "Grand Island Southeast 21st CCLC", "arrivalPattern": "A1 – Roster-Based + General Check-In First", "entryMethod": "E3 – Later, spreadsheet upload", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + General Check-In First", "method": "Later, spreadsheet upload", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"text": "Enter attendance into AS21 Participation Upload Template for Daily Site Attendance and all individual activities; this may be possible from a spreadsheet export from your non-AS21 system. Be sure to account for session start and end times including those outside the 10 minute attendance windows."}, {"parts": [{"text": "Upload attendance spreadsheet into AS21 using the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38345522690843-How-to-Import-Participation-Data", "text": "How to Import Participation Data"}, {"text": " instructions."}]}, {"parts": [{"text": "Review all uploaded records for accuracy. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "2A": {"site": "Papillion LaVista South After School", "arrivalPattern": "A2 – Roster-Based + Direct to APR Activity", "entryMethod": "E1 – Real-time, barcode scanner (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + Direct to APR Activity", "method": "Real-time, barcode scanner (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}]}, {"title": "During Activities", "items": [{"parts": [{"text": "Open each APR activity in AS21. Scan each student in as they arrive using the barcode scanner. Scanning could be from the Sign In/Out Roster or Participant Barcode report or from student ID cards (if Participant ID matches student ID cards). For the first 10 minutes of arrival after the typical program start time, set the Times toggle to Session Time. Ten (10) minutes after the program start time, change the Times toggle to Current Time. Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " for more information."}]}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "2B": {"site": "Bellevue East Elementary", "arrivalPattern": "A2 – Roster-Based + Direct to APR Activity", "entryMethod": "E1 – Real-time, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + Direct to APR Activity", "method": "Real-time, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}]}, {"title": "During Activities", "items": [{"parts": [{"text": "Open each APR activity in AS21. Type part of student’s name or scroll to their check box and check it as they arrive. For the first 10 minutes of arrival after the typical program start time, set the Times toggle to “Session Time.” Ten (10) minutes after the program start time, change the Times toggle to “Current Time.” Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " for more information."}]}, {"text": "Staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "2C": {"site": "Ralston Elementary Bridge Program", "arrivalPattern": "A2 – Roster-Based + Direct to APR Activity", "entryMethod": "E2 – Later, manual entry (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + Direct to APR Activity", "method": "Later, manual entry (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for each activity into AS21. To do this, follow instructions for "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " and select the appropriate activity for each entry session. When scanning, times will default to the program start and end times."}]}, {"text": "To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times."}]}]}, "2D": {"site": "La Vista West After School Academy", "arrivalPattern": "A2 – Roster-Based + Direct to APR Activity", "entryMethod": "E2 – Later, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + Direct to APR Activity", "method": "Later, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for each activity into AS21. To do this, follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " article. When entering, times will default to the program start and end times."}]}, {"text": "To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times."}]}]}, "2E": {"site": "Gretna East Elementary", "arrivalPattern": "A2 – Roster-Based + Direct to APR Activity", "entryMethod": "E3 – Later, spreadsheet upload", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "navy", "structure": "Roster-Based + Direct to APR Activity", "method": "Later, spreadsheet upload", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"text": "Enter attendance into AS21 Participation Upload Template for all individual activities; this may be possible from a spreadsheet export from your non-AS21 system. Be sure to account for session start and end times including those outside the 10 minute attendance windows as indicated on the paper rosters."}, {"parts": [{"text": "Upload attendance spreadsheet into AS21 using the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38345522690843-How-to-Import-Participation-Data", "text": "How to Import Participation Data"}, {"text": " instructions."}]}]}]}, "3A": {"site": "Lincoln High School Community Program", "arrivalPattern": "A3 – Drop-In + General Check-In First", "entryMethod": "E1 – Real-time, barcode scanner (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + General Check-In First", "method": "Real-time, barcode scanner (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}]}, {"title": "During Arrival", "items": [{"parts": [{"text": "Open Daily Site Attendance activity in AS21. Scan each student in as they arrive using the barcode scanner. Scanning could be from the Sign In/Out Roster or Participant Barcode report or from student ID cards (if Participant ID matches student ID cards). For the first 10 minutes of arrival after the typical program start time, set the Times toggle to Session Time. Ten (10) minutes after the program start time, change the Times toggle to Current Time. Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " for more information."}]}]}, {"title": "During Activities", "items": [{"text": "Staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "During Check-Out", "items": [{"text": "Scan each student out using the barcode scanner if they depart more than 10 min before program end time. Those that leave within the 10 minute window automatically receive the program end time (e.g. 6 pm)"}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "3B": {"site": "North Platte Community Learning Center", "arrivalPattern": "A3 – Drop-In + General Check-In First", "entryMethod": "E1 – Real-time, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + General Check-In First", "method": "Real-time, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}]}, {"title": "During Arrival", "items": [{"parts": [{"text": "Open Daily Site Attendance activity in AS21. Type part of student’s name or scroll to their check box and check it as they arrive. For the first 10 minutes of arrival after the typical program start time, set the Times toggle to “Session Time.” Ten (10) minutes after the program start time, change the Times toggle to “Current Time.” Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " for more information."}]}]}, {"title": "During Activities", "items": [{"text": "Staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "During Check-Out", "items": [{"text": "Manually record each student (best method is to scroll to their name and click it opening a box where the departure time can be updated) if they depart more than 10 min before program end time. Those that leave within the 10 minute window automatically receive the program end time (e.g. 6 pm)"}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "3C": {"site": "Kearney Elementary After School", "arrivalPattern": "A3 – Drop-In + General Check-In First", "entryMethod": "E2 – Later, manual entry (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + General Check-In First", "method": "Later, manual entry (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Print a copy of the Participant Barcode report for drop-in session staff to record attendance"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Staff mark students present on the paper Participant Barcode report for drop-in activities – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for the Daily Site Attendance activity into AS21. To do this, follow instructions for "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " being sure to select the correct Daily Site Attendance session (e.g., Fall Daily Attendance – Regular). When scanning, times will default to the program start and end times. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}, {"parts": [{"text": "Enter activity attendance for drop-in activities. If the "}, {"text": "Participant Barcode report", "bold": true}, {"text": " was used, follow the instructions provided in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " being sure to select the correct activity session to scan the barcodes of those present. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}, {"parts": [{"text": "Enter activity attendance for drop-in activities. If a "}, {"text": "blank roster", "bold": true}, {"text": " was used without barcodes, follow instructions in "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ", using the “all participants” tab when selecting participants. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}]}]}, "3D": {"site": "Hastings Learning Center", "arrivalPattern": "A3 – Drop-In + General Check-In First", "entryMethod": "E2 – Later, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + General Check-In First", "method": "Later, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for the Daily Site Attendance activity into AS21. To do this, follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " article and select the appropriate Daily Site Attendance session (e.g., Fall Daily Attendance – Regular). When entering, times will default to the program start and end times. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}, {"parts": [{"text": "Enter activity attendance for drop-in activities. Follow the instructions provided in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ", using the “all participants” tab when selecting participants. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}]}]}, "3E": {"site": "Columbus Elementary Excellence", "arrivalPattern": "A3 – Drop-In + General Check-In First", "entryMethod": "E3 – Later, spreadsheet upload", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + General Check-In First", "method": "Later, spreadsheet upload", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"text": "Enter attendance into AS21 Participation Upload Template for Daily Site Attendance and all individual activities; this may be possible from a spreadsheet export from your non-AS21 system. Be sure to account for session start and end times including those outside the 10 minute attendance windows."}, {"parts": [{"text": "Upload attendance spreadsheet into AS21 using the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38345522690843-How-to-Import-Participation-Data", "text": "How to Import Participation Data"}, {"text": " instructions."}]}, {"parts": [{"text": "Review all uploaded records for accuracy. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "4A": {"site": "Scottsbluff After School Program", "arrivalPattern": "A4 – Drop-In + Direct to APR Activity", "entryMethod": "E1 – Real-time, barcode scanner (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + Direct to APR Activity", "method": "Real-time, barcode scanner (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}]}, {"title": "During Activities", "items": [{"parts": [{"text": "Open each APR activity in AS21. Scan each student in as they arrive using the barcode scanner. Scanning could be from the Sign In/Out Roster or Participant Barcode report or from student ID cards (if Participant ID matches student ID cards). For the first 10 minutes of arrival after the typical program start time, set the Times toggle to Session Time. Ten (10) minutes after the program start time, change the Times toggle to Current Time. Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " for more information."}]}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "4B": {"site": "Alliance Community Center 21st CCLC", "arrivalPattern": "A4 – Drop-In + Direct to APR Activity", "entryMethod": "E1 – Real-time, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + Direct to APR Activity", "method": "Real-time, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}]}, {"title": "During Activities", "items": [{"parts": [{"text": "Open each APR activity in AS21. Type part of student’s name or scroll to their check box and check it as they arrive. For the first 10 minutes of arrival after the typical program start time, set the Times toggle to “Session Time.” Ten (10) minutes after the program start time, change the Times toggle to “Current Time.” Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " for more information."}]}, {"text": "Staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "4C": {"site": "Lexington Elementary LEARN", "arrivalPattern": "A4 – Drop-In + Direct to APR Activity", "entryMethod": "E2 – Later, manual entry (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + Direct to APR Activity", "method": "Later, manual entry (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Print a copy of the Participant Barcode report for drop-in session staff to record attendance"}]}, {"title": "During Activities", "items": [{"text": "Staff mark students present on the paper Participant Barcode report for drop-in activities – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for each activity into AS21. To do this, follow instructions for "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " and select the appropriate activity for each entry session. When scanning, times will default to the program start and end times."}]}, {"text": "To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times."}]}]}, "4D": {"site": "Chadron Elementary After School", "arrivalPattern": "A4 – Drop-In + Direct to APR Activity", "entryMethod": "E2 – Later, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + Direct to APR Activity", "method": "Later, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Activities", "items": [{"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for each drop-in activity into AS21. Follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ", using the “all participants” tab when selecting participants. When entering, times will default to the program start and end times."}]}, {"text": "To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times."}]}]}, "4E": {"site": "Sidney Elementary 21st CCLC", "arrivalPattern": "A4 – Drop-In + Direct to APR Activity", "entryMethod": "E3 – Later, spreadsheet upload", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "teal", "structure": "Drop-In + Direct to APR Activity", "method": "Later, spreadsheet upload", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Activities", "items": [{"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"text": "Enter attendance into AS21 Participation Upload Template for all individual activities; this may be possible from a spreadsheet export from your non-AS21 system. Be sure to account for session start and end times including those outside the 10 minute attendance windows as indicated on the paper rosters."}, {"parts": [{"text": "Upload attendance spreadsheet into AS21 using the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38345522690843-How-to-Import-Participation-Data", "text": "How to Import Participation Data"}, {"text": " instructions."}]}]}]}, "5A": {"site": "Omaha Central After School Academy", "arrivalPattern": "A5 – Hybrid + General Check-In First", "entryMethod": "E1 – Real-time, barcode scanner (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + General Check-In First", "method": "Real-time, barcode scanner (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}]}, {"title": "During Arrival", "items": [{"parts": [{"text": "Open Daily Site Attendance activity in AS21. Scan each student in as they arrive using the barcode scanner. Scanning could be from the Sign In/Out Roster or Participant Barcode report or from student ID cards (if Participant ID matches student ID cards). For the first 10 minutes of arrival after the typical program start time, set the Times toggle to Session Time. Ten (10) minutes after the program start time, change the Times toggle to Current Time. Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " for more information."}]}, {"text": "Before students move from gathering space to first activity, copy Daily Site attendance to pre-enrolled activities using “based on enrollment” option if students are pre-enrolled. Detailed instructions for this process are provided near the end of the How to Track Participation for Multiple Participants Article."}]}, {"title": "During Activities", "items": [{"text": "For pre-enrolled activities, staff must confirm all enrolled students are marked correctly. Update times on your device immediately for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time. Many will be marked present as attendance was copied from Check-In attendance."}, {"text": "Staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "During Check-Out", "items": [{"text": "Scan each student out using the barcode scanner if they depart more than 10 min before program end time. Those that leave within the 10 minute window automatically receive the program end time (e.g. 6 pm)"}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "5B": {"site": "Oak Creek Elementary Enrichment", "arrivalPattern": "A5 – Hybrid + General Check-In First", "entryMethod": "E1 – Real-time, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + General Check-In First", "method": "Real-time, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}]}, {"title": "During Arrival", "items": [{"parts": [{"text": "Open Daily Site Attendance activity in AS21. Type part of student’s name or scroll to their check box and check it as they arrive. For the first 10 minutes of arrival after the typical program start time, set the Times toggle to “Session Time.” Ten (10) minutes after the program start time, change the Times toggle to “Current Time.” Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " for more information."}]}, {"text": "Before students move from gathering space to first activity, copy Daily Site attendance to pre-enrolled activities using “based on enrollment” option if students are pre-enrolled. Detailed instructions for this process are provided near the end of the How to Track Participation for Multiple Participants Article."}]}, {"title": "During Activities", "items": [{"text": "For pre-enrolled activities, staff must confirm all enrolled students are marked correctly. Update times on your device immediately for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time. Many will be marked present as attendance was copied from Check-In attendance."}, {"text": "For drop-in activities, staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "During Check-Out", "items": [{"text": "Manually record each student (best method is to scroll to their name and click it opening a box where the departure time can be updated) if they depart more than 10 min before program end time. Those that leave within the 10 minute window automatically receive the program end time (e.g. 6 pm)"}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "5C": {"site": "Riverside Elementary", "arrivalPattern": "A5 – Hybrid + General Check-In First", "entryMethod": "E2 – Later, manual entry (barcode scanner)", "checkoutPattern": "C1 – Signature + later manual entry", "color": "orange", "structure": "Hybrid + General Check-In First", "method": "Later, manual entry (barcode scanner)", "hasSig": true, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}, {"text": "Print Sign in/Out Roster (with signature column) for Daily Site Attendance and give to check-in staff"}, {"text": "Print Sign in/Out Roster (with signature column) for each pre-enrolled activity and give to activity staff"}, {"text": "Print a copy of the Participant Barcode report for drop-in session staff to record attendance (with signature column)"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}, {"text": "Staff mark students present on the paper Participant Barcode report for drop-in activities – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "Parents/guardians sign out students on Sign in/Out Roster with time"}, {"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for the Daily Site Attendance activity into AS21. To do this, follow instructions for "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " being sure to select the correct Daily Site Attendance session (e.g., Fall Daily Attendance – Regular). When scanning, times will default to the program start and end times."}]}, {"parts": [{"text": "Copy Daily Site attendance to pre-enrolled activities using the “based on enrollment” option for activities with pre-enrolled students. Detailed instructions for this process are provided near the end of the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ". When attendance is copied, times will default to activity start and end times."}]}, {"parts": [{"text": "Enter activity attendance for drop-in activities (without pre-enrollment). If the Participant Barcode report was used, follow the instructions provided in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " being sure to select the correct activity session to scan the barcodes of those present. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}, {"parts": [{"text": "Enter activity attendance for drop-in activities (without pre-enrollment). If a blank roster was used without barcodes, follow instructions in "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ", using the “all participants” tab when selecting participants. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}, {"parts": [{"text": "Review the rosters for Daily Site Attendance and activity rosters. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "5D": {"site": "Prairie Ridge Elementary", "arrivalPattern": "A5 – Hybrid + General Check-In First", "entryMethod": "E2 – Later, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + General Check-In First", "method": "Later, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}, {"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for the Daily Site Attendance activity into AS21. To do this, follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " article and select the appropriate Daily Site Attendance session (e.g., Fall Daily Attendance – Regular). When entering, times will default to the program start and end times."}]}, {"parts": [{"text": "Copy Daily Site attendance to pre-enrolled activities using the “based on enrollment” option for activities with pre-enrolled students. Detailed instructions for this process are provided near the end of the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ". When attendance is copied, times will default to activity start and end times."}]}, {"parts": [{"text": "Enter activity attendance for drop-in activities (without pre-enrollment). Follow the instructions provided in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ", using the “all participants” tab when selecting participants. To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times"}]}, {"parts": [{"text": "Review the rosters for Daily Site Attendance and activity rosters. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "5E": {"site": "Timber Ridge After School", "arrivalPattern": "A5 – Hybrid + General Check-In First", "entryMethod": "E3 – Later, spreadsheet upload", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + General Check-In First", "method": "Later, spreadsheet upload", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure Daily Site Attendance is set up as an activity in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, using one of the approved daily site attendance activity names (Fall Daily Attendance – Regular, Fall Daily Attendance – OOS, Spring Daily Attendance – Regular, Spring Daily Attendance – OOS, or Summer Daily Attendance), selecting “Well-rounded Education Activities” as the APR Category, and indicating that the activity is NOT 21st CCLC funded (do not select that checkbox under the funder dropdown)."}]}, {"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities and daily site session"}, {"text": "Print Sign in/Out Roster for Daily Site Attendance and give to check-in staff"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Arrival", "items": [{"text": "Staff mark students present on Sign in/Out Roster as they arrive with an “X”"}, {"text": "Note any students who arrive later than 10 minutes after normal program start time by entering their time of arrival on the roster"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}, {"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "During Check-Out", "items": [{"text": "On the Sign in/Out Roster that was used to check students in, be sure to note departure times more than 10 minutes before normal program end time. The rest will be assumed to have left at the program departure time (e.g. 6 pm)"}]}, {"title": "After Program (or next day before programming)", "items": [{"text": "Enter attendance into AS21 Participation Upload Template for Daily Site Attendance and all individual activities; this may be possible from a spreadsheet export from your non-AS21 system. Be sure to account for session start and end times including those outside the 10 minute attendance windows."}, {"parts": [{"text": "Upload attendance spreadsheet into AS21 using the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38345522690843-How-to-Import-Participation-Data", "text": "How to Import Participation Data"}, {"text": " instructions."}]}, {"parts": [{"text": "Review all uploaded records for accuracy. Adjust times for individuals that were late arrivers or early leavers as needed in their Registration record using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "6A": {"site": "Valley View Elementary 21st CCLC", "arrivalPattern": "A6 – Hybrid + Direct to APR Activity", "entryMethod": "E1 – Real-time, barcode scanner (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + Direct to APR Activity", "method": "Real-time, barcode scanner (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}]}, {"title": "During Activities", "items": [{"parts": [{"text": "Open each APR activity in AS21. Scan each student in as they arrive using the barcode scanner. Scanning could be from the Sign In/Out Roster or Participant Barcode report or from student ID cards (if Participant ID matches student ID cards). For the first 10 minutes of arrival after the typical program start time, set the Times toggle to Session Time. Ten (10) minutes after the program start time, change the Times toggle to Current Time. Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " for more information."}]}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "6B": {"site": "Sunset Hills Learning Center", "arrivalPattern": "A6 – Hybrid + Direct to APR Activity", "entryMethod": "E1 – Real-time, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + Direct to APR Activity", "method": "Real-time, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}]}, {"title": "During Activities", "items": [{"parts": [{"text": "Open each APR activity in AS21. Type part of student’s name or scroll to their check box and check it as they arrive. For the first 10 minutes of arrival after the typical program start time, set the Times toggle to “Session Time.” Ten (10) minutes after the program start time, change the Times toggle to “Current Time.” Refer to "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " for more information."}]}, {"text": "Staff must update start and end times in AS21 on their device for students attending their activity. Tapping on the checkbox next to their names and then accepting the default session times in the status/times window for all is the easiest way. For those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time, be sure to update their times by tapping on their names."}]}, {"title": "After Program (Same Day)", "items": [{"parts": [{"text": "Review all attendance records in AS21 for accuracy. While most attendance should have been recorded in real-time, adjust daily site and/or activity times for known late arrivers or early leavers as needed using the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/34866711806747-Managing-Individual-Participation", "text": "Managing Individual Participation"}, {"text": " instructions."}]}]}]}, "6C": {"site": "Blue River Elementary Program", "arrivalPattern": "A6 – Hybrid + Direct to APR Activity", "entryMethod": "E2 – Later, manual entry (barcode scanner)", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + Direct to APR Activity", "method": "Later, manual entry (barcode scanner)", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}, {"text": "Print a copy of the Participant Barcode report for drop-in session staff to record attendance"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}, {"text": "Staff mark students present on the paper Participant Barcode report for drop-in activities – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for each activity into AS21. To do this, follow instructions for "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/39728143023131-How-to-Track-Participation-with-a-Barcode-Scanner", "text": "How to Track Participation with a Barcode Scanner"}, {"text": " and select the appropriate activity for each entry session. When scanning, times will default to the program start and end times."}]}, {"text": "To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times."}]}]}, "6D": {"site": "Cottonwood Elementary After School", "arrivalPattern": "A6 – Hybrid + Direct to APR Activity", "entryMethod": "E2 – Later, manual entry", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + Direct to APR Activity", "method": "Later, manual entry", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}, {"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"parts": [{"text": "Enter attendance for each activity into AS21. To do this, follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": " article. When entering, times will default to the program start and end times."}]}, {"parts": [{"text": "Enter attendance for each drop-in activity into AS21. Follow instructions in the "}, {"link": "https://ostt-support.pathwisek12.com/hc/en-us/articles/28483320831899-How-to-Track-Participation-for-Multiple-Participants", "text": "How to Track Participation for Multiple Participants"}, {"text": ", using the “all participants” tab when selecting participants. When entering, times will default to the program start and end times."}]}, {"text": "To adjust times for individuals that were marked on the roster as late arrivers or early leavers, click on their name and adjust the time(s) to match the roster’s times."}]}]}, "6E": {"site": "Meadowbrook Elementary Academy", "arrivalPattern": "A6 – Hybrid + Direct to APR Activity", "entryMethod": "E3 – Later, spreadsheet upload", "checkoutPattern": "C0 – No parent/guardian signature required", "color": "orange", "structure": "Hybrid + Direct to APR Activity", "method": "Later, spreadsheet upload", "hasSig": false, "sections": [{"title": "Before Program", "items": [{"parts": [{"text": "Be sure today’s activities are scheduled in AS21. To do this, follow the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38956335067035-Creating-Scheduled-Activities", "text": "Creating Scheduled Activities"}, {"text": " instructions, and be sure to indicate the activity as 21st CCLC funded if appropriate."}]}, {"text": "Be sure students are enrolled in correct activities in AS21"}, {"text": "Print Sign in/Out Roster for each pre-enrolled activity and give to activity staff"}, {"text": "Have some blank rosters available for drop-in sessions"}]}, {"title": "During Activities", "items": [{"text": "Scheduled activity staff mark students present on activity Sign in/Out Roster with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}, {"text": "Staff mark students present on blank attendance paper for drop-in activities with an “X” – record actual times for those that arrive 10 minutes after normal activity start time or that leave 10 minutes before normal activity end time"}]}, {"title": "After Program (or next day before programming)", "items": [{"text": "Enter attendance into AS21 Participation Upload Template for all individual activities; this may be possible from a spreadsheet export from your non-AS21 system. Be sure to account for session start and end times including those outside the 10 minute attendance windows as indicated on the paper rosters."}, {"parts": [{"text": "Upload attendance spreadsheet into AS21 using the "}, {"link": "https://as21-support.pathwisek12.com/hc/en-us/articles/38345522690843-How-to-Import-Participation-Data", "text": "How to Import Participation Data"}, {"text": " instructions."}]}]}]}}; // end PATHWAYS
+
+// ═══════════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function getPathwayCode() {
+  const a = state.answers;
+  const numMap = {'AA':'1','AB':'2','BA':'3','BB':'4','CA':'5','CB':'6'};
+  const num = numMap[(a.s1q1||'') + (a.s1q2||'')] || '?';
+  let method = '?';
+  if (a.s2q1 === 'A')       method = a.s2q3 === 'Yes' ? 'A' : 'B';
+  else if (a.s2q2 === 'A')  method = a.s2q3 === 'Yes' ? 'C' : 'D';
+  else if (a.s2q2 === 'B')  method = 'E';
+  return num + method;
+}
+
+function getPartialCode() {
+  const a = state.answers;
+  if (!a.s1q1) return '';
+  const numMap = {'A':'Roster','B':'Drop-In','C':'Hybrid'};
+  let s = numMap[a.s1q1] || '';
+  if (a.s1q2) s += (a.s1q2 === 'A') ? ' + Gen. Check-In' : ' + Direct';
+  return s;
+}
+
+function getVisibleQuestions() {
+  const a = state.answers;
+  const qs = ['s1q1','s1q2','s2q1'];
+  if (a.s2q1 === 'B') qs.push('s2q2');
+  if (a.s2q1 === 'A' || a.s2q2 === 'A') qs.push('s2q3');
+  qs.push('s2q4');
+  return qs;
+}
+
+function currentQIndex() {
+  return getVisibleQuestions().indexOf(state.history[state.history.length-1]);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER: PROGRESS
+// ═══════════════════════════════════════════════════════════════════
+function renderProgress() {
+  const bar = document.getElementById('progressBar');
+  if (state.history.length === 0) { bar.innerHTML = ''; return; }
+  const visQ = getVisibleQuestions();
+  const cur = state.history[state.history.length-1];
+  const qLabels = {s1q1:'Activity Type',s1q2:'Arrival',s2q1:'Entry Timing',s2q2:'Entry Method',s2q3:'Barcode?',s2q4:'Parent Sig.'};
+  let html = '';
+  visQ.forEach((qid, i) => {
+    const answered = state.answers[qid] !== undefined;
+    const active   = qid === cur && !answered;
+    const done     = answered;
+    if (i > 0) html += `<div class="prog-connector ${done?'done':''}"></div>`;
+    html += `<div class="prog-step ${done?'done':''} ${active?'active':''}">
+      <div class="prog-dot ${done?'done':''} ${active?'active':''}">${done?'':i+1}</div>
+      <div class="prog-label">${qLabels[qid]||''}</div>
+    </div>`;
+  });
+  if (cur === 'result') {
+    html += `<div class="prog-connector done"></div>
+      <div class="prog-step active">
+        <div class="prog-dot active">✓</div>
+        <div class="prog-label">Your Pathway</div>
+      </div>`;
+  }
+  bar.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER: WELCOME
+// ═══════════════════════════════════════════════════════════════════
+function renderWelcome() {
+  document.getElementById('cardArea').innerHTML = `
+  <div class="card">
+    <div class="welcome-header">
+      <div class="welcome-eyebrow">📋 Nebraska 21st CCLC</div>
+      <h2>AS21 Attendance Tracking<br><span>Pathway Finder</span></h2>
+      <p>Answer 5–6 questions about how your program is structured and how you collect attendance data. We'll identify your exact AS21 pathway and provide step-by-step instructions.</p>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-steps">
+        <div class="welcome-step">
+          <div class="ws-num">1</div>
+          <div class="ws-text"><strong>Program Structure</strong><span>How activities are organized and how students arrive each day.</span></div>
+        </div>
+        <div class="welcome-step">
+          <div class="ws-num">2</div>
+          <div class="ws-text"><strong>Data Entry Method</strong><span>When and how your staff enters attendance into AS21.</span></div>
+        </div>
+        <div class="welcome-step">
+          <div class="ws-num">3</div>
+          <div class="ws-text"><strong>Barcode &amp; Signatures</strong><span>Whether you use a barcode scanner and if parent signatures are required.</span></div>
+        </div>
+        <div class="welcome-step">
+          <div class="ws-num">4</div>
+          <div class="ws-text"><strong>Your Pathway</strong><span>Step-by-step instructions tailored exactly to your site's setup.</span></div>
+        </div>
+      </div>
+      <div class="welcome-10min">
+        <div class="icon">⏱️</div>
+        <p><strong>10-Minute Window Rule (applies to all pathways):</strong> Students arriving or departing within 10 minutes of the normal activity start or end time may be recorded at the scheduled time. Attendance should be captured as close to real-time as possible.</p>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">
+        Find My Pathway <span class="arrow">→</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER: QUESTION
+// ═══════════════════════════════════════════════════════════════════
+function renderQuestion(qid) {
+  const q = QUESTIONS[qid];
+  const visQ = getVisibleQuestions();
+  const idx  = visQ.indexOf(qid);
+  const total = visQ.length;
+  const partial = getPartialCode();
+
+  const optionsHtml = q.options.map(opt => {
+    let letterClass = `opt-${opt.value}`;
+    let letter = opt.value;
+    return `<button class="option-btn" onclick="selectAnswer('${qid}','${opt.value}')">
+      <div class="option-letter ${letterClass}">${letter}</div>
+      <div class="option-text">
+        <strong>${opt.label}</strong>
+        <span>${opt.desc}</span>
+      </div>
+    </button>`;
+  }).join('');
+
+  const showBack = state.history.length > 1;
+
+  document.getElementById('cardArea').innerHTML = `
+  <div class="card">
+    <div class="q-header">
+      <div class="q-section-badge badge-${q.section.toLowerCase()}">${q.sectionLabel}</div>
+      <div class="q-num">Question ${idx+1} of ${total}</div>
+    </div>
+    <div class="q-body">
+      <h2>${q.title}</h2>
+      <p class="q-subtitle">${q.subtitle}</p>
+    </div>
+    <div class="options-grid">${optionsHtml}</div>
+    <div class="q-nav">
+      ${showBack ? `<button class="btn-back" onclick="goBack()">← Back</button>` : ''}
+      ${partial ? `<div class="path-preview">Path so far: <span>${partial}</span></div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER: RESULT
+// ═══════════════════════════════════════════════════════════════════
+function renderResult() {
+  var code = getPathwayCode();
+  var p    = PATHWAYS[code];
+  var q4   = state.answers.s2q4 === 'Yes';
+  if (!p) {
+    document.getElementById('cardArea').innerHTML =
+      '<div class="card" style="padding:40px;text-align:center"><h2>Could not determine pathway (' + code + '). Please start over.</h2></div>';
+    return;
+  }
+  var bannerClass   = 'banner-' + p.color;
+  var sectionColors = { navy:'#1F3864', teal:'#1B6B64', orange:'#C55A11' };
+  var sectionColor  = sectionColors[p.color] || '#1F3864';
+
+  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function partsToHtml(parts) {
+    return parts.map(function(part) {
+      var content = part.link
+        ? '<a href="' + part.link + '" target="_blank" rel="noopener">' + esc(part.text) + '</a>'
+        : esc(part.text);
+      return part.bold ? '<strong>' + content + '</strong>' : content;
+    }).join('');
+  }
+
+  function renderItem(item) {
+    if (item.continuation)      return '<div class="cl-continuation">' + esc(item.continuation) + '</div>';
+    if (item.continuationParts) return '<div class="cl-continuation">' + partsToHtml(item.continuationParts) + '</div>';
+    var content = item.text ? esc(item.text) : item.parts ? partsToHtml(item.parts) : '';
+    return '<div class="cl-item"><div class="cl-checkbox">\u2610</div><div class="cl-text">' + content + '</div></div>';
+  }
+
+  var sectionsHtml = '';
+  p.sections.forEach(function(sec) {
+    var itemsHtml = sec.items.map(renderItem).join('');
+    sectionsHtml += '<div class="cl-section"><div class="cl-section-header"><div class="cl-section-title" style="background:' + sectionColor + '">' + esc(sec.title) + '</div><div class="cl-section-line"></div></div>' + itemsHtml + '</div>';
+  });
+
+  var qLabels = {s1q1:'Activity Type',s1q2:'Arrival',s2q1:'Timing',s2q2:'Method',s2q3:'Barcode',s2q4:'Parent Sig.'};
+  var trailItems = Object.entries(state.answers).map(function(entry, i, arr) {
+    var k = entry[0], v = entry[1];
+    return '<span class="trail-item"><span class="trail-q">' + (qLabels[k]||k) + ':</span><span class="trail-a">' + v + '</span></span>' + (i < arr.length-1 ? '<span class="trail-separator">\u00b7</span>' : '');
+  }).join('');
+
+  // Check-Out Pattern: if user answered Q4=Yes but pathway is C0, show C1
+  var checkoutDisplay = p.checkoutPattern;
+  if (q4 && !p.hasSig) checkoutDisplay = 'C1 \u2013 Parent/guardian signature required';
+
+  var tags = '<span class="result-tag">' + esc(p.structure.split(' + ')[0]) + '</span>';
+  if (p.structure.indexOf(' + ') >= 0) tags += '<span class="result-tag">' + esc(p.structure.split(' + ').slice(1).join(' + ')) + '</span>';
+  if (q4 && !p.hasSig) tags += '<span class="result-tag">+ Parent Signature</span>';
+  if (p.hasSig)        tags += '<span class="result-tag">Signature Required</span>';
+
+  document.getElementById('cardArea').innerHTML =
+    '<div class="card">' +
+      '<div class="result-banner ' + bannerClass + '"><div class="result-code">' + code + '</div><div class="result-info"><div class="result-label">Your AS21 Daily Process Pathway</div><h2>' + esc(p.method) + '</h2><div class="result-tags">' + tags + '</div></div></div>' +
+      '<div class="site-persona-bar"><div class="sp-label">Example Site</div><div class="sp-name">' + esc(p.site) + '</div></div>' +
+      '<div class="meta-grid"><div class="meta-cell"><div class="mc-label">Arrival Pattern</div><div class="mc-value">' + esc(p.arrivalPattern) + '</div></div><div class="meta-cell"><div class="mc-label">Entry Method</div><div class="mc-value">' + esc(p.entryMethod) + '</div></div><div class="meta-cell"><div class="mc-label">Check-Out Pattern</div><div class="mc-value">' + esc(checkoutDisplay) + '</div></div></div>' +
+      '<div class="checklist-body">' + sectionsHtml + '</div>' +
+      '<div class="result-actions"><button class="btn-action btn-restart" onclick="restart()">\u2190 Start Over</button><button class="btn-action btn-print" onclick="window.print()">\ud83d\udda8 Print Checklist</button></div>' +
+      '<div class="answer-trail">' + trailItems + '</div>' +
+    '</div>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  FLOW CONTROL
+// ═══════════════════════════════════════════════════════════════════
+function startQuiz() {
+  state.answers = {};
+  state.history = ['s1q1'];
+  renderProgress();
+  renderQuestion('s1q1');
+}
+
+function selectAnswer(qid, value) {
+  state.answers[qid] = value;
+  const q    = QUESTIONS[qid];
+  const next = q.next(value);
+  state.history.push(next);
+  renderProgress();
+  if (next === 'result') renderResult();
+  else renderQuestion(next);
+}
+
+function goBack() {
+  if (state.history.length <= 1) { restart(); return; }
+  const prev = state.history[state.history.length - 2];
+  // Remove last entry and clear answer for current
+  delete state.answers[state.history[state.history.length - 1]];
+  state.history.pop();
+  renderProgress();
+  if (prev === 'welcome' || state.history.length === 0) { state.history = []; renderWelcome(); }
+  else renderQuestion(prev);
+}
+
+function restart() {
+  state.answers = {};
+  state.history = [];
+  document.getElementById('progressBar').innerHTML = '';
+  renderWelcome();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+renderWelcome();
+</script>
+</body>
+</html>
